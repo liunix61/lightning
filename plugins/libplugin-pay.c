@@ -575,8 +575,12 @@ static struct command_result *payment_finished(struct payment *p)
 	assert((result.leafstates & PAYMENT_STEP_SUCCESS) == 0 ||
 	       result.preimage != NULL);
 
-	if (p->parent == NULL) {
-		assert(p->cmd != NULL);
+	if (p->parent == NULL && cmd == NULL) {
+		/* This is the tree root, but we already reported success or
+		 * failure, so noop. */
+		return command_still_pending(NULL);
+
+	}  else if (p->parent == NULL) {
 		if (payment_is_success(p)) {
 			assert(result.treestates & PAYMENT_STEP_SUCCESS);
 			assert(result.leafstates & PAYMENT_STEP_SUCCESS);
